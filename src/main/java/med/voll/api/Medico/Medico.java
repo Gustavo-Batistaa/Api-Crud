@@ -32,6 +32,7 @@ public class Medico {
         private Endereco endereco;
 
         private Boolean ativo;
+
         public Medico(DadosCadastroMedico dados) {
                 this.nome= dados.nome();
                 this.ativo=true;
