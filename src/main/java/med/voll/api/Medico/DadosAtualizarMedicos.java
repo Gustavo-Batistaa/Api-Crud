@@ -11,5 +11,9 @@ public record DadosAtualizarMedicos(
 
         String telefone,
 
+        Boolean ativo,
+
         DadosCadastroEndereco endereco) {
+
+
 }

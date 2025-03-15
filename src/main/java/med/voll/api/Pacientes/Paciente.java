@@ -31,6 +31,7 @@ public class Paciente {
     private Endereco endereco;
 
     private Boolean ativo;
+
     public Paciente(DadosPaciente dadosPaciente){
         this.nome = dadosPaciente.nome();
         this.ativo= true;
