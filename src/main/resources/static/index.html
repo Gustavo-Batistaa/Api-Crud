@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voll Med - Teste de API</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: #f4f5f7; color: #1c1e21; font-size: 14px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .sub { color: #65676b; margin-bottom: 20px; }
+  .card { background: #fff; border: 1px solid #d8dadd; border-radius: 8px; padding: 18px; margin-bottom: 18px; }
+  .row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .grow { flex: 1; min-width: 160px; }
+  label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #3a3d42; }
+  input, select {
+    width: 100%; padding: 8px 10px; border: 1px solid #c4c7cc;
+    border-radius: 5px; font-size: 14px; font-family: inherit; background: #fff;
+  }
+  input:focus, select:focus { outline: 2px solid #1a73e8; outline-offset: -1px; border-color: #1a73e8; }
+  .hint { font-size: 11px; color: #8a8d91; margin-top: 3px; }
+  button {
+    padding: 8px 14px; border-radius: 5px; border: 1px solid transparent;
+    font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .primary { background: #1a73e8; color: #fff; }
+  .primary:hover { background: #1765cc; }
+  .ghost { background: #fff; border-color: #c4c7cc; color: #3a3d42; }
+  .ghost:hover { background: #f1f3f4; }
+  .danger { background: #fff; border-color: #d93025; color: #d93025; }
+  .danger:hover { background: #fce8e6; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .tab { background: #fff; border: 1px solid #d8dadd; color: #5f6368; }
+  .tab.active { background: #1a73e8; border-color: #1a73e8; color: #fff; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid #eceef0; font-size: 13px; }
+  th { color: #65676b; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; }
+  td.actions { text-align: right; white-space: nowrap; }
+  td.actions button { padding: 5px 10px; margin-left: 6px; }
+  #status { padding: 10px 12px; border-radius: 6px; margin-bottom: 16px; display: none; white-space: pre-wrap; font-size: 13px; }
+  #status.ok { display: block; background: #e6f4ea; color: #137333; border: 1px solid #a8dab5; }
+  #status.err { display: block; background: #fce8e6; color: #c5221f; border: 1px solid #f3b9b5; }
+  .hidden { display: none !important; }
+  fieldset { border: 1px solid #e0e2e5; border-radius: 6px; padding: 14px; margin: 0 0 14px; }
+  legend { font-size: 12px; font-weight: 700; color: #5f6368; padding: 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .empty { text-align: center; color: #8a8d91; padding: 24px; }
+  label.check { display: flex; align-items: center; gap: 7px; font-weight: 600; }
+  label.check input { width: auto; }
+</style>
+</head>
+<body>
+
+<h1>Voll Med API</h1>
+<div class="sub">Interface simples para testar os endpoints de m&eacute;dicos e pacientes.</div>
+
+<div class="card">
+  <div class="row">
+    <div class="grow">
+      <label for="baseUrl">URL base da API</label>
+      <input id="baseUrl" value="http://localhost:8080">
+    </div>
+    <button class="primary" id="btnReload">Carregar</button>
+  </div>
+</div>
+
+<div id="status"></div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="medicos">M&eacute;dicos</button>
+  <button class="tab" data-tab="pacientes">Pacientes</button>
+</div>
+
+<div class="card">
+  <div class="row" style="margin-bottom:16px">
+    <button class="primary" id="btnNew">+ Novo</button>
+    <span class="sub" id="count" style="margin:0"></span>
+  </div>
+
+  <form id="form" class="hidden">
+    <input type="hidden" id="fId">
+    <div id="fields" class="grid"></div>
+
+    <fieldset id="fsEndereco">
+      <legend>Endere&ccedil;o</legend>
+      <div class="grid">
+        <div class="grow"><label for="e_logradouro">Logradouro *</label><input id="e_logradouro"><div class="hint">obrigat&oacute;rio</div></div>
+        <div><label for="e_numero">N&uacute;mero</label><input id="e_numero"></div>
+        <div><label for="e_complemento">Complemento</label><input id="e_complemento"></div>
+        <div><label for="e_bairro">Bairro *</label><input id="e_bairro"></div>
+        <div><label for="e_cep">CEP *</label><input id="e_cep" maxlength="8"><div class="hint">8 d&iacute;gitos, sem tra&ccedil;o</div></div>
+        <div><label for="e_cidade">Cidade *</label><input id="e_cidade"></div>
+        <div><label for="e_uf">UF *</label><input id="e_uf" maxlength="2"></div>
+        <div><label for="e_estado">Estado *</label><input id="e_estado"><div class="hint">exigido pela valida&ccedil;&atilde;o, n&atilde;o usado no banco</div></div>
+      </div>
+    </fieldset>
+
+    <div class="row">
+      <button type="submit" class="primary" id="btnSave">Salvar</button>
+      <button type="button" class="ghost" id="btnCancel">Cancelar</button>
+    </div>
+  </form>
+
+  <div id="tableWrap"></div>
+</div>
+
+<script>
+const ESPECIALIDADES = ['ORTOPEDIA', 'CARDIOLOGIA', 'GINECOLOGISTA', 'DERMATOLOGIA'];
+
+const CONFIG = {
+  medicos: {
+    titulo: 'Médico',
+    colunas: [
+      ['ID', r => r.id],
+      ['Nome', r => r.nome],
+      ['Email', r => r.email],
+      ['CRM', r => r.crm],
+      ['Especialidade', r => r.especialidade]
+    ],
+    campos: [
+      { name: 'nome', label: 'Nome', modos: ['create', 'edit'] },
+      { name: 'email', label: 'Email', type: 'email', modos: ['create'] },
+      { name: 'crm', label: 'CRM', modos: ['create'], dica: '4 a 6 dígitos' },
+      { name: 'especialidade', label: 'Especialidade', type: 'select', opcoes: ESPECIALIDADES, modos: ['create'] },
+      { name: 'telefone', label: 'Telefone', modos: ['create', 'edit'] },
+      { name: 'cep', label: 'CEP', modos: ['create'], dica: '8 dígitos, sem traço' },
+      { name: 'ativo', label: 'Ativo', type: 'check', modos: ['edit'] }
+    ]
+  },
+  pacientes: {
+    titulo: 'Paciente',
+    colunas: [
+      ['ID', r => r.id],
+      ['Nome', r => r.nome],
+      ['CPF', r => r.cpf],
+      ['Email', r => r.email]
+    ],
+    campos: [
+      { name: 'nome', label: 'Nome', modos: ['create', 'edit'] },
+      { name: 'cpf', label: 'CPF', modos: ['create'], dica: 'único' },
+      { name: 'email', label: 'Email', type: 'email', modos: ['create'], dica: 'único' },
+      { name: 'telefone', label: 'Telefone', modos: ['create', 'edit'] }
+    ]
+  }
+};
+
+const ENDERECO_IDS = ['logradouro', 'numero', 'complemento', 'bairro', 'cep', 'cidade', 'uf', 'estado'];
+const OBRIGATORIOS = ['logradouro', 'bairro', 'cep', 'cidade', 'uf', 'estado'];
+
+let recurso = 'medicos';
+let itens = [];
+let editando = null;
+
+const $ = id => document.getElementById(id);
+const base = () => $('baseUrl').value.replace(/\/+$/, '');
+
+function aviso(texto, ok) {
+  const el = $('status');
+  el.className = ok ? 'ok' : 'err';
+  el.textContent = texto;
+}
+
+function formatarErro(res, dados) {
+  const linhas = [];
+
+  if (dados && typeof dados === 'object' && !Array.isArray(dados)) {
+    if (dados.erro) linhas.push(dados.erro);
+    if (Array.isArray(dados.mensagens)) linhas.push(...dados.mensagens);
+    else if (dados.detail) linhas.push(dados.detail);
+    else if (dados.message) linhas.push(dados.message);
+    if (dados.path) linhas.push('Endpoint: ' + dados.path);
+  } else if (typeof dados === 'string' && dados.trim()) {
+    linhas.push(dados.trim());
+  }
+
+  if (!linhas.length) linhas.push(res.statusText || 'Erro desconhecido');
+  return res.status + ' — ' + linhas.join('\n');
+}
+
+async function api(metodo, caminho, corpo) {
+  const res = await fetch(base() + caminho, {
+    method: metodo,
+    headers: corpo ? { 'Content-Type': 'application/json' } : undefined,
+    body: corpo ? JSON.stringify(corpo) : undefined
+  });
+  const texto = await res.text();
+  let dados = null;
+  try { dados = texto ? JSON.parse(texto) : null; } catch (e) { dados = texto; }
+  if (!res.ok) throw new Error(formatarErro(res, dados));
+  return dados;
+}
+
+function lista(res) {
+  if (Array.isArray(res)) return res;
+  if (res && Array.isArray(res.content)) return res.content;
+  return [];
+}
+
+function enderecoCompleto() {
+  return OBRIGATORIOS.every(c => ($('e_' + c).value || '').trim() !== '');
+}
+
+function lerEndereco() {
+  const out = {};
+  ENDERECO_IDS.forEach(c => out[c] = $('e_' + c).value.trim());
+  return out;
+}
+
+function montarTabela() {
+  const cfg = CONFIG[recurso];
+  $('count').textContent = itens.length + ' registro(s)';
+  if (!itens.length) {
+    $('tableWrap').innerHTML = '<div class="empty">Nenhum registro encontrado.</div>';
+    return;
+  }
+  const head = cfg.colunas.map(c => '<th>' + c[0] + '</th>').join('');
+  const body = itens.map(r => {
+    const cells = cfg.colunas.map(c => '<td>' + (c[1](r) ?? '') + '</td>').join('');
+    return '<tr>' + cells +
+      '<td class="actions">' +
+        '<button class="ghost" data-edit="' + r.id + '">Editar</button>' +
+        '<button class="danger" data-del="' + r.id + '">Excluir</button>' +
+      '</td></tr>';
+  }).join('');
+  $('tableWrap').innerHTML = '<table><thead><tr>' + head + '<th></th></tr></thead><tbody>' + body + '</tbody></table>';
+}
+
+function montarCampos(modo) {
+  const cfg = CONFIG[recurso];
+  $('fields').innerHTML = cfg.campos
+    .filter(c => c.modos.includes(modo))
+    .map(c => {
+      if (c.type === 'check') {
+        return '<div><label class="check"><input type="checkbox" id="c_' + c.name + '"> ' + c.label + '</label></div>';
+      }
+      const input = c.type === 'select'
+        ? '<select id="c_' + c.name + '"><option value="">Selecione</option>' +
+            c.opcoes.map(o => '<option>' + o + '</option>').join('') + '</select>'
+        : '<input id="c_' + c.name + '" type="' + (c.type || 'text') + '">';
+      return '<div><label for="c_' + c.name + '">' + c.label + '</label>' + input +
+        (c.dica ? '<div class="hint">' + c.dica + '</div>' : '') + '</div>';
+    }).join('');
+}
+
+function limparFormulario() {
+  $('form').reset();
+  $('fId').value = '';
+  ENDERECO_IDS.forEach(c => $('e_' + c).value = '');
+  CONFIG[recurso].campos.forEach(c => { if (c.type === 'check') $('c_' + c.name).checked = true; });
+}
+
+function abrirFormulario(modo, registro) {
+  editando = registro || null;
+  $('form').classList.remove('hidden');
+  $('fsEndereco').classList.remove('hidden');
+  limparFormulario();
+  montarCampos(modo);
+
+  if (registro) {
+    $('fId').value = registro.id;
+    CONFIG[recurso].campos.forEach(c => {
+      const el = $('c_' + c.name);
+      if (!el) return;
+      if (c.type === 'check') el.checked = registro[c.name] !== false;
+      else el.value = registro[c.name] ?? '';
+    });
+    const end = registro.endereco || {};
+    ENDERECO_IDS.forEach(c => $('e_' + c).value = end[c] ?? '');
+  }
+
+  $('btnSave').textContent = registro ? 'Salvar alterações' : 'Cadastrar';
+  $('form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function fecharFormulario() {
+  $('form').classList.add('hidden');
+  editando = null;
+  limparFormulario();
+}
+
+async function carregar() {
+  try {
+    const res = await api('GET', '/' + recurso + '?size=50&page=0');
+    itens = lista(res);
+    montarTabela();
+    aviso('Carregado com sucesso: ' + itens.length + ' registro(s).', true);
+  } catch (e) {
+    itens = [];
+    montarTabela();
+    aviso('Erro ao carregar: ' + e.message, false);
+  }
+}
+
+$('form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const cfg = CONFIG[recurso];
+  const modo = editando ? 'edit' : 'create';
+  const dados = {};
+
+  cfg.campos.filter(c => c.modos.includes(modo)).forEach(c => {
+    const el = $('c_' + c.name);
+    if (!el) return;
+    dados[c.name] = c.type === 'check' ? el.checked : el.value.trim();
+  });
+
+  if (modo === 'create') {
+    dados.endereco = lerEndereco();
+  } else {
+    dados.id = Number($('fId').value);
+    if (enderecoCompleto()) dados.endereco = lerEndereco();
+  }
+
+  try {
+    await api(modo === 'create' ? 'POST' : 'PUT', '/' + recurso, dados);
+    aviso(cfg.titulo + (modo === 'create' ? ' cadastrado' : ' atualizado') + ' com sucesso.', true);
+    fecharFormulario();
+    await carregar();
+  } catch (e) {
+    aviso('Erro ao salvar: ' + e.message, false);
+  }
+});
+
+$('btnNew').addEventListener('click', () => abrirFormulario('create', null));
+$('btnCancel').addEventListener('click', fecharFormulario);
+$('btnReload').addEventListener('click', carregar);
+
+$('tableWrap').addEventListener('click', async ev => {
+  const alvo = ev.target;
+  if (!alvo.dataset) return;
+
+  if (alvo.dataset.edit) {
+    try {
+      const det = await api('GET', '/' + recurso + '/' + alvo.dataset.edit);
+      abrirFormulario('edit', det);
+    } catch (e) {
+      aviso('Erro ao carregar detalhe: ' + e.message, false);
+    }
+  }
+
+  if (alvo.dataset.del) {
+    if (!confirm('Excluir (inativar) o registro ' + alvo.dataset.del + '?')) return;
+    try {
+      await api('DELETE', '/' + recurso + '/' + alvo.dataset.del);
+      aviso('Registro excluído.', true);
+      await carregar();
+    } catch (e) {
+      aviso('Erro ao excluir: ' + e.message, false);
+    }
+  }
+});
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    recurso = t.dataset.tab;
+    fecharFormulario();
+    carregar();
+  });
+});
+
+carregar();
+</script>
+</body>
+</html>
